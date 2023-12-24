@@ -1,98 +1,253 @@
 import { LitElement, css, html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, query, state } from 'lit/decorators.js';
 import './components/bo-shell';
+import './components/bw-canvas';
+import { Canvas } from './components/bw-canvas';
+import './components/drag-area';
+import './components/img-grid';
+import './components/img-result';
+import { decode, encode, encodeWithMask } from './utils/algo';
+import { getBinaryImageData, scaleImageData } from './utils/image-data';
+import './what-is-this';
+
+const MAX_NUM_IMAGES = 5;
 
 @customElement('bo-root')
 export class Root extends LitElement {
-  /**
-   * Copy for the read the docs hint.
-   */
-  @property()
-  docsHint = 'Click on the Vite and Lit logos to learn more';
+  @query('bw-canvas')
+  private bwCanvas?: Canvas;
 
-  /**
-   * The number of times the button has been clicked.
-   */
-  @property({ type: Number })
-  count = 0;
+  @state()
+  private size = 512;
+  @state()
+  private canvasImgData?: ImageData;
+  @state()
+  private imgDatas = Array<ImageData>();
+  @state()
+  private numImages = 2;
+  @state()
+  private result = Array<ImageData>();
 
-  render() {
-    return html` <bo-shell></bo-shell> `;
+  private encode() {
+    if (this.bwCanvas)
+      if (this.imgDatas.length === 0) this.result = encode(this.bwCanvas.getImageData(), this.numImages);
+      else if (this.imgDatas.length === 1) {
+        const mask = scaleImageData(this.imgDatas[0], this.size);
+        this.result = [encodeWithMask(this.bwCanvas.getImageData(), this.imgDatas[0]), mask];
+      }
   }
 
-  private _onClick() {
-    this.count++;
+  private decode() {
+    if (this.imgDatas.length > 1) this.result = [decode(this.imgDatas.map(img => scaleImageData(img, this.size)))];
+  }
+
+  render() {
+    return html`
+      <bo-shell>
+        <div id="upload-row">
+          <div>
+            <h4>Drawing</h4>
+            <drag-area
+              ?multiple=${false}
+              dropText="Drop here to replace drawing with image"
+              @upload=${async (e: CustomEvent<File[]>) => (this.canvasImgData = await getBinaryImageData(e.detail[0]))}
+            >
+              <bw-canvas size=${this.size} .imgData=${this.canvasImgData}></bw-canvas>
+            </drag-area>
+          </div>
+          <div id="image-container">
+            <div>
+              <h4>Images</h4>
+              <drag-area
+                dropText="Drop here to add image"
+                @upload=${async (e: CustomEvent<File[]>) => {
+                  this.imgDatas = [
+                    ...this.imgDatas,
+                    ...(await Promise.all(e.detail.map(file => getBinaryImageData(file, false)))),
+                  ];
+                  if (this.imgDatas.length > MAX_NUM_IMAGES) this.imgDatas = this.imgDatas.slice(-MAX_NUM_IMAGES);
+                  if (this.imgDatas.length > 1) {
+                    this.numImages = this.imgDatas.length;
+                    this.size = Math.max(...this.imgDatas.map(img => img.width));
+                  }
+                }}
+              >
+                <img-grid
+                  .imgDatas=${this.imgDatas}
+                  @remove=${(e: CustomEvent<number>) => {
+                    this.imgDatas = [...this.imgDatas.slice(0, e.detail), ...this.imgDatas.slice(e.detail + 1)];
+                    if (this.imgDatas.length > 1) this.numImages = this.imgDatas.length;
+                  }}
+                ></img-grid>
+              </drag-area>
+            </div>
+            <div id="option-container">
+              <label>
+                Resolution:
+                <select
+                  .value=${this.size.toString()}
+                  @change=${(e: Event) => {
+                    this.canvasImgData = this.bwCanvas?.getImageData();
+                    this.size = parseInt((e.target as HTMLSelectElement).value);
+                  }}
+                >
+                  <option value="256">256px</option>
+                  <option value="512">512px</option>
+                  <option value="1024">1024px</option>
+                  <option value="2048">2048px</option>
+                </select>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div id="action-row">
+          <label>
+            Number of images:
+            <input
+              type="range"
+              min="2"
+              max="${MAX_NUM_IMAGES}"
+              .value="${this.numImages.toString()}"
+              @input=${(e: Event) => (this.numImages = parseInt((e.target as HTMLInputElement).value))}
+              ?disabled=${this.imgDatas.length > 1}
+            />
+            <span>${this.numImages}</span>
+          </label>
+          <div>
+            <button @click=${this.encode} ?disabled=${this.imgDatas.length > 1}>Encode</button>
+            <button @click=${this.decode} ?disabled=${this.imgDatas.length <= 1}>Decode</button>
+          </div>
+        </div>
+        <div id="hint">
+          This will
+          ${this.imgDatas.length === 0
+            ? `encode the drawing into ${this.numImages} images.`
+            : this.imgDatas.length === 1
+              ? 'encode the drawing using the image.'
+              : `decode the ${this.imgDatas.length} images.`}
+        </div>
+
+        ${this.result.length
+          ? html`<div id="result">
+              <h4>Result</h4>
+              <img-result .imgDatas=${this.result}></img-result>
+            </div>`
+          : null}
+
+        <what-is-this id="info"></what-is-this>
+      </bo-shell>
+    `;
   }
 
   static styles = css`
-    :host {
+    * {
+      box-sizing: border-box;
+    }
+
+    #upload-row {
+      display: flex;
+      gap: 0.5rem;
+      width: 100%;
+      max-width: 150vh;
+    }
+    @media (max-width: 536px) {
+      #upload-row {
+        flex-direction: column;
+      }
+    }
+    #upload-row > div {
+      flex: 1;
+    }
+
+    h4 {
+      margin: 0 0 0.5rem 0.25rem;
+    }
+    bw-canvas,
+    img-grid {
+      width: 100%;
+    }
+
+    #image-container {
       display: flex;
       flex-direction: column;
+      gap: 0.5rem;
+    }
+    #option-container {
+      display: flex;
+      flex: 1;
+      justify-content: flex-end;
+      align-items: center;
+    }
+
+    #action-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
       width: 100%;
-      height: 100%;
+      max-width: 1000px;
     }
-
-    .logo {
-      height: 6em;
-      padding: 1.5em;
-      will-change: filter;
-      transition: filter 300ms;
+    #action-row > div {
+      display: flex;
+      flex: 1;
+      justify-content: flex-end;
+      gap: 0.5rem;
     }
-    .logo:hover {
-      filter: drop-shadow(0 0 2em #646cffaa);
+    #action-row > label {
+      display: flex;
+      flex: 1;
+      align-items: center;
+      min-width: 20rem;
     }
-    .logo.lit:hover {
-      filter: drop-shadow(0 0 2em #325cffaa);
-    }
-
-    .card {
-      padding: 2em;
-    }
-
-    .read-the-docs {
-      color: #888;
-    }
-
-    ::slotted(h1) {
-      font-size: 3.2em;
-      line-height: 1.1;
-    }
-
-    a {
-      font-weight: 500;
-      color: #646cff;
-      text-decoration: inherit;
-    }
-    a:hover {
-      color: #535bf2;
-    }
-
-    button {
-      border-radius: 8px;
-      border: 1px solid transparent;
-      padding: 0.6em 1.2em;
-      font-size: 1em;
-      font-weight: 500;
-      font-family: inherit;
-      background-color: #1a1a1a;
+    input {
       cursor: pointer;
-      transition: border-color 0.25s;
+    }
+    button {
+      cursor: pointer;
+      border: 1px solid currentColor;
+      border-radius: 0.5rem;
+      background-color: transparent;
+      padding: 0 1rem;
+      height: 3rem;
+      color: #646ee4;
+      font-weight: 600;
+      font-size: 0.875rem;
+      line-height: 1rem;
+      text-align: center;
     }
     button:hover {
-      border-color: #646cff;
+      background-color: #646ee4;
+      color: black;
     }
-    button:focus,
-    button:focus-visible {
-      outline: 4px auto -webkit-focus-ring-color;
+    button:active {
+      transform: scale(0.97);
+    }
+    button[disabled] {
+      opacity: 0.5;
+      pointer-events: none;
     }
 
-    @media (prefers-color-scheme: light) {
-      a:hover {
-        color: #747bff;
-      }
-      button {
-        background-color: #f9f9f9;
-      }
+    #hint {
+      margin-top: 0.25rem;
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    #result {
+      margin-top: 1rem;
+      width: 100%;
+      max-width: 1600px;
+    }
+    img-result {
+      margin-top: 0.5rem;
+    }
+
+    what-is-this {
+      margin-top: 1rem;
+      width: 100%;
+      max-width: 1024px;
     }
   `;
 }

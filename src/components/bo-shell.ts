@@ -1,27 +1,29 @@
 import { LitElement, css, html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement } from 'lit/decorators.js';
 
 @customElement('bo-shell')
 export class Shell extends LitElement {
-  /**
-   * Copy for the read the docs hint.
-   */
-  @property()
-  docsHint = 'Click on the Vite and Lit logos to learn more';
-
-  /**
-   * The number of times the button has been clicked.
-   */
-  @property({ type: Number })
-  count = 0;
-
   render() {
     return html`
       <header>
-        <span id="spacer"></span>
+        <a id="info" href="#info" title="What is this?">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"
+            />
+          </svg>
+        </a>
         <span id="title">Bin Ocular</span>
-        <a id="github" href="https://github.com/sherlockdoyle/bin-ocular" target="_blank">
-          <svg class="h-12 w-12 fill-current" viewBox="0 0 24 24">
+        <a id="github" href="https://github.com/sherlockdoyle/bin-ocular" target="_blank" title="See on GitHub">
+          <svg viewBox="0 0 24 24" fill="currentColor">
             <path
               fill-rule="evenodd"
               clip-rule="evenodd"
@@ -31,7 +33,7 @@ export class Shell extends LitElement {
         </a>
       </header>
       <main>
-        <p>This is the main area for content.</p>
+        <slot></slot>
       </main>
     `;
   }
@@ -40,8 +42,10 @@ export class Shell extends LitElement {
     :host {
       display: flex;
       flex-direction: column;
+      background-color: #111;
       width: 100vw;
       height: 100vh;
+      color: white;
     }
 
     :host > header {
@@ -56,31 +60,29 @@ export class Shell extends LitElement {
       padding: 0.75rem;
       color: white;
     }
-    :host #title {
+    #title {
       font-weight: 900;
       font-size: 2rem;
       line-height: 2.25rem;
       text-transform: uppercase;
     }
-    :host #spacer {
-      width: 48px;
-    }
+    :host #spacer,
     :host #github {
       height: 48px;
-      color: white;
     }
-    :host #github svg {
+    svg {
       width: 3rem;
       height: 3rem;
-      fill: currentColor;
+      color: white;
     }
 
     :host > main {
+      display: flex;
       flex: 1;
-      background-color: #111;
+      flex-direction: column;
+      align-items: center;
       padding: 0.75rem;
       overflow-y: auto;
-      color: white;
     }
   `;
 }
