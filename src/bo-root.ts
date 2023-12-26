@@ -31,10 +31,8 @@ export class Root extends LitElement {
   private encode() {
     if (this.bwCanvas)
       if (this.imgDatas.length === 0) this.result = encode(this.bwCanvas.getImageData(), this.numImages);
-      else if (this.imgDatas.length === 1) {
-        const mask = scaleImageData(this.imgDatas[0], this.size);
-        this.result = [encodeWithMask(this.bwCanvas.getImageData(), this.imgDatas[0]), mask];
-      }
+      else if (this.imgDatas.length === 1)
+        this.result = [encodeWithMask(this.bwCanvas.getImageData(), scaleImageData(this.imgDatas[0], this.size))];
   }
 
   private decode() {
@@ -199,9 +197,11 @@ export class Root extends LitElement {
       display: flex;
       flex: 1;
       align-items: center;
+      gap: 0.125rem;
       min-width: 20rem;
     }
     input {
+      flex: 1;
       cursor: pointer;
     }
     button {

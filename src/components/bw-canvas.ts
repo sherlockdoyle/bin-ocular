@@ -63,11 +63,15 @@ export class Canvas extends LitElement {
   }
   private onTouchStart(evt: TouchEvent) {
     this.isDrawing = true;
-    this.lastX = evt.touches[0].clientX;
-    this.lastY = evt.touches[0].clientY;
+
+    const rect = this.canvas.getBoundingClientRect();
+    this.lastX = evt.touches[0].clientX - rect.left;
+    this.lastY = evt.touches[0].clientY - rect.top;
   }
   private onTouchMove(evt: TouchEvent) {
-    this.drawLine(evt.touches[0].clientX, evt.touches[0].clientY);
+    const rect = this.canvas.getBoundingClientRect();
+    this.drawLine(evt.touches[0].clientX - rect.left, evt.touches[0].clientY - rect.top);
+
     evt.preventDefault();
   }
   private onTouchEnd() {
