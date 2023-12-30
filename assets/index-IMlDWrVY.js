@@ -468,6 +468,10 @@
     :host {
       line-height: 1.5;
     }
+
+    a {
+      color: #8fbaff;
+    }
   `;zt([w({type:Boolean})],et.prototype,"alternateContent",2);et=zt([S("what-is-this")],et);var Be=Object.defineProperty,We=Object.getOwnPropertyDescriptor,$=(i,t,e,s)=>{for(var o=s>1?void 0:s?We(t,e):t,n=i.length-1,r;n>=0;n--)(r=i[n])&&(o=(s?r(t,e,o):r(o))||o);return s&&o&&Be(t,e,o),o};const Ge=[128,256,512,1024,2048],lt=5;let m=class extends v{constructor(){super(...arguments),this.algoCluster=!1,this.size=512,this.imgDatas=Array(),this.numImages=2,this.result=Array()}encode(){this.algoCluster?this.imgDatas.length===0&&(this.result=Ue(this.bwCanvas.getImageData(),this.numImages)):this.imgDatas.length===0?this.result=Le(this.bwCanvas.getImageData(),this.numImages):this.imgDatas.length===1&&(this.result=[Ne(this.bwCanvas.getImageData(),X(this.imgDatas[0],this.size))])}decode(){this.imgDatas.length>1&&(this.algoCluster?this.result=[ke(this.imgDatas.map(i=>X(i,this.size)))]:this.result=[He(this.imgDatas.map(i=>X(i,this.size)))])}updated(i){var t;i.has("result")&&((t=this.resultEl)==null||t.scrollIntoView({behavior:"smooth",block:"nearest"}))}render(){return p`
       <bo-shell
         title=${this.algoCluster?"Bin Ocular 2":"Bin Ocular"}
