@@ -1,21 +1,26 @@
-import { LitElement, css, html } from 'lit';
+import { LitElement, PropertyValueMap, css, html } from 'lit';
 import { customElement, query, state } from 'lit/decorators.js';
 import './components/bo-shell';
 import './components/bw-canvas';
 import { Canvas } from './components/bw-canvas';
-import './components/drag-area';
 import './components/img-grid';
 import './components/img-result';
+import './components/upload-area';
 import { decode, encode, encodeWithMask } from './utils/algo';
 import { getBinaryImageData, scaleImageData } from './utils/image-data';
 import './what-is-this';
 
+const RESOLUTIONS = [128, 256, 512, 1024, 2048];
 const MAX_NUM_IMAGES = 5;
 
 @customElement('bo-root')
 export class Root extends LitElement {
   @query('bw-canvas')
-  private bwCanvas?: Canvas;
+  private bwCanvas!: Canvas;
+  @query('#result')
+  private resultEl?: HTMLElement;
+  @query('what-is-this')
+  private whatIsThis!: HTMLElement;
 
   @state()
   private size = 512;
@@ -29,34 +34,37 @@ export class Root extends LitElement {
   private result = Array<ImageData>();
 
   private encode() {
-    if (this.bwCanvas)
-      if (this.imgDatas.length === 0) this.result = encode(this.bwCanvas.getImageData(), this.numImages);
-      else if (this.imgDatas.length === 1)
-        this.result = [encodeWithMask(this.bwCanvas.getImageData(), scaleImageData(this.imgDatas[0], this.size))];
+    if (this.imgDatas.length === 0) this.result = encode(this.bwCanvas.getImageData(), this.numImages);
+    else if (this.imgDatas.length === 1)
+      this.result = [encodeWithMask(this.bwCanvas.getImageData(), scaleImageData(this.imgDatas[0], this.size))];
   }
 
   private decode() {
     if (this.imgDatas.length > 1) this.result = [decode(this.imgDatas.map(img => scaleImageData(img, this.size)))];
   }
 
+  protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+    if (_changedProperties.has('result')) this.resultEl?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
   render() {
     return html`
-      <bo-shell>
+      <bo-shell @info=${() => this.whatIsThis.scrollIntoView({ behavior: 'smooth' })}>
         <div id="upload-row">
           <div>
             <h4>Drawing</h4>
-            <drag-area
+            <upload-area
               ?multiple=${false}
               dropText="Drop here to replace drawing with image"
               @upload=${async (e: CustomEvent<File[]>) => (this.canvasImgData = await getBinaryImageData(e.detail[0]))}
             >
               <bw-canvas size=${this.size} .imgData=${this.canvasImgData}></bw-canvas>
-            </drag-area>
+            </upload-area>
           </div>
           <div id="image-container">
             <div>
               <h4>Images</h4>
-              <drag-area
+              <upload-area
                 dropText="Drop here to add image"
                 @upload=${async (e: CustomEvent<File[]>) => {
                   this.imgDatas = [
@@ -77,7 +85,7 @@ export class Root extends LitElement {
                     if (this.imgDatas.length > 1) this.numImages = this.imgDatas.length;
                   }}
                 ></img-grid>
-              </drag-area>
+              </upload-area>
             </div>
             <div id="option-container">
               <label>
@@ -85,14 +93,13 @@ export class Root extends LitElement {
                 <select
                   .value=${this.size.toString()}
                   @change=${(e: Event) => {
-                    this.canvasImgData = this.bwCanvas?.getImageData();
+                    this.canvasImgData = this.bwCanvas.getImageData();
                     this.size = parseInt((e.target as HTMLSelectElement).value);
                   }}
                 >
-                  <option value="256">256px</option>
-                  <option value="512">512px</option>
-                  <option value="1024">1024px</option>
-                  <option value="2048">2048px</option>
+                  ${RESOLUTIONS.map(
+                    value => html`<option value=${value} ?selected=${value === this.size}>${value}px</option>`,
+                  )}
                 </select>
               </label>
             </div>
@@ -133,7 +140,7 @@ export class Root extends LitElement {
             </div>`
           : null}
 
-        <what-is-this id="info"></what-is-this>
+        <what-is-this></what-is-this>
       </bo-shell>
     `;
   }

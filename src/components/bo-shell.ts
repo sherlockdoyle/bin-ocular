@@ -3,10 +3,14 @@ import { customElement } from 'lit/decorators.js';
 
 @customElement('bo-shell')
 export class Shell extends LitElement {
+  private onInfoClick() {
+    this.dispatchEvent(new CustomEvent('info'));
+  }
+
   render() {
     return html`
       <header>
-        <a id="info" href="#info" title="What is this?">
+        <button title="What is this?" @click=${this.onInfoClick}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -20,9 +24,9 @@ export class Shell extends LitElement {
               d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"
             />
           </svg>
-        </a>
+        </button>
         <span id="title">Bin Ocular</span>
-        <a id="github" href="https://github.com/sherlockdoyle/bin-ocular" target="_blank" title="See on GitHub">
+        <a href="https://github.com/sherlockdoyle/bin-ocular" target="_blank" title="See on GitHub">
           <svg viewBox="0 0 24 24" fill="currentColor">
             <path
               fill-rule="evenodd"
@@ -39,13 +43,14 @@ export class Shell extends LitElement {
   }
 
   static styles = css`
+    * {
+      box-sizing: border-box;
+    }
     :host {
       display: flex;
       flex-direction: column;
-      background-color: #111;
-      width: 100vw;
-      height: 100vh;
-      color: white;
+      width: 100dvw;
+      height: 100dvh;
     }
 
     :host > header {
@@ -66,8 +71,12 @@ export class Shell extends LitElement {
       line-height: 2.25rem;
       text-transform: uppercase;
     }
-    :host #spacer,
-    :host #github {
+    button {
+      all: unset;
+      cursor: pointer;
+    }
+    a,
+    button {
       height: 48px;
     }
     svg {

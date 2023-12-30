@@ -7,53 +7,45 @@ export class WhatIsThis extends LitElement {
     return html`
       <h2>What is this?</h2>
       <p>
-        <strong>Bin Ocular</strong> is an innovative (and toy) project that allows you to encode binary (black and
-        white) images into random noise. The magic of Bin Ocular lies in its ability to split an image into 2-5 noise
-        images, which can then be combined to recreate the original image.
+        So, you're curious about <strong>Bin Ocular</strong>, huh? It's a cool toy project that lets you turn binary
+        (black and white) images into random noise. Think of it as a magic trick where an image is split into 2-5 noise
+        images. When you put these images back together, voila, the original image reappears!
       </p>
       <p>
-        The concept was born out of the desire to hide a well-known secret within two noise images. When combined, these
-        images reveal the original image, symbolizing a unique bond between two individuals.
+        The idea came from wanting to hide a secret image within two noise images. When you combine them, the secret
+        image is revealed, symbolizing a special bond between two people.
       </p>
-      <h3>How to Use</h3>
-      <p>There are three ways to use Bin Ocular:</p>
+      <h3>How to play with it?</h3>
       <ol>
         <li>
-          <strong>Artistry Mode:</strong> Use the <em>Drawing</em> area to create your own masterpiece. Adjust the
-          <em>Line Width</em> or use the <em>Clear</em> button to start over. You can also modify the resolution of the
-          canvas and the generated images, and select the number of noise images to create. The more images you
-          generate, the sparser the noise will be. If you prefer, drag-and-drop an image into the drawing area to
-          convert it into binary format. Click <em>Encode</em> to generate the noise images which you can then save and
-          share.
+          <strong>Artistry Mode:</strong> Get creative in the <em>Drawing</em> area. Adjust the <em>Line Width</em>, or
+          hit <em>Clear</em> to start fresh. You can change the resolution and decide how many noise images to make.
+          More images mean less noise in each image. You can also drag and drop an image to convert it into binary. Hit
+          <em>Encode</em>, and you've got your noise images to save and share.
         </li>
         <li>
-          <strong>Noise Infusion:</strong> Begin by drawing or uploading an image in the <em>Drawing</em> area. Next,
-          upload a noise image in the <em>Images</em> area. Click <em>Encode</em> and watch as a new noise image is
-          created. Now you can use the original and the new noise image, just as above.
+          <strong>Noise Infusion:</strong> Start by drawing or uploading an image in the <em>Drawing</em> area. Then,
+          upload a noise image in the <em>Images</em> area. Hit <em>Encode</em> and watch a new noise image come to
+          life. Now, you can use both the original and new noise image, just as above.
         </li>
         <li>
           <strong>Decoding Adventure:</strong> Upload multiple images in the <em>Images</em> area and press
-          <em>Decode</em> to reveal the hidden image. Remember, you can upload up to 5 images. If you upload more, the
-          oldest image will be removed.
+          <strong>Decode</strong> to uncover the hidden image. Remember, you can upload up to 5 images. If you upload
+          more, the oldest one gets the boot.
         </li>
       </ol>
-      <h3>Experience the Magic Physically</h3>
       <p>
-        For a tangible experience of the magic of Bin Ocular, consider printing the resulting noise images on
-        transparent or translucent material. When you physically overlap these printed images, the original content
-        reveals itself, adding a whole new dimension to the experience. You'll need to overlap them exactly on top of
-        each other to see the effect.
+        Want to take it to the next level? Print the noise images on transparent or translucent material. But here's a
+        pro tip: make sure to turn the white parts of the image transparent before you hit the print button. You can use
+        any image editing software or even search online for tools to do this. Overlap these prints, and the original
+        image pops up. It's like magic!
       </p>
-      <hr />
-      <p>The algorithm is simple and intuitive - upload different images and experiment!</p>
+      <p>The algorithm is super easy - just upload different images and have fun experimenting!</p>
+      <p>The website is only available in dark mode (because who doesn't love dark mode?).</p>
       <p>
-        Please note that the website has not been tested on mobile yet, so you may encounter unexpected layouts. Also,
-        the website only supports dark mode.
-      </p>
-      <p>
-        To learn more about this project, check it out on
-        <a href="https://github.com/sherlockdoyle/bin-ocular" target="_blank">GitHub</a>. If you encounter any bugs or
-        have ideas for improvement, you can report or discuss them on GitHub.
+        Want to learn more? Check out the project on
+        <a href="https://github.com/sherlockdoyle/bin-ocular" target="_blank">GitHub</a>. If you spot any bugs or have
+        ideas to make it better, feel free to share them on GitHub.
       </p>
     `;
   }

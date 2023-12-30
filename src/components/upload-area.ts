@@ -1,8 +1,8 @@
 import { LitElement, css, html } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 
-@customElement('drag-area')
-export class DragArea extends LitElement {
+@customElement('upload-area')
+export class UploadArea extends LitElement {
   @property({ type: String })
   dropText = 'Drop image here';
   @property({ type: Boolean })
@@ -93,16 +93,9 @@ export class DragArea extends LitElement {
     button {
       position: absolute;
       top: 0;
-      right: 0;
-      left: 0;
-      visibility: hidden;
-      opacity: 0;
-      transition:
-        visibility 0s,
-        opacity 0.1s,
-        transform 0.1s;
+      right: 0.25rem;
+      transform: translateY(-100%);
       cursor: pointer;
-      margin: 0 auto;
       border: none;
       border-radius: 50%;
       background-color: #000a;
@@ -110,10 +103,9 @@ export class DragArea extends LitElement {
       aspect-ratio: 1 / 1;
       color: white;
     }
-    :host(:hover) button {
-      transform: scale(0.75) translateY(-125%);
-      visibility: visible;
-      opacity: 1;
+    button svg {
+      width: 1.75rem;
+      height: 1.75rem;
     }
 
     input {
@@ -145,7 +137,7 @@ export class DragArea extends LitElement {
       padding-bottom: 25%;
     }
 
-    svg {
+    #drag-overlay svg {
       width: 3rem;
       height: 3rem;
     }
@@ -154,6 +146,6 @@ export class DragArea extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'drag-area': DragArea;
+    'upload-area': UploadArea;
   }
 }
