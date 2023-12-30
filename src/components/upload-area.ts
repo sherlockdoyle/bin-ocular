@@ -98,7 +98,7 @@ export class UploadArea extends LitElement {
       cursor: pointer;
       border: none;
       border-radius: 50%;
-      background-color: #000a;
+      background-color: transparent;
       padding: 0;
       aspect-ratio: 1 / 1;
       color: white;

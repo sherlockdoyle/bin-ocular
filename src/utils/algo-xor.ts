@@ -1,4 +1,4 @@
-// The main algorithm!
+// The main algorithm! XOR based.
 
 type Arr = Uint8Array;
 

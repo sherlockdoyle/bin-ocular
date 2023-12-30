@@ -6,7 +6,8 @@ import { Canvas } from './components/bw-canvas';
 import './components/img-grid';
 import './components/img-result';
 import './components/upload-area';
-import { decode, encode, encodeWithMask } from './utils/algo';
+import { decode as cluster_decode, encode as cluster_encode } from './utils/algo-cluster';
+import { decode as xor_decode, encode as xor_encode, encodeWithMask as xor_encodeWithMask } from './utils/algo-xor';
 import { getBinaryImageData, scaleImageData } from './utils/image-data';
 import './what-is-this';
 
@@ -23,6 +24,8 @@ export class Root extends LitElement {
   private whatIsThis!: HTMLElement;
 
   @state()
+  private algoCluster = false;
+  @state()
   private size = 512;
   @state()
   private canvasImgData?: ImageData;
@@ -34,13 +37,19 @@ export class Root extends LitElement {
   private result = Array<ImageData>();
 
   private encode() {
-    if (this.imgDatas.length === 0) this.result = encode(this.bwCanvas.getImageData(), this.numImages);
-    else if (this.imgDatas.length === 1)
-      this.result = [encodeWithMask(this.bwCanvas.getImageData(), scaleImageData(this.imgDatas[0], this.size))];
+    if (this.algoCluster) {
+      if (this.imgDatas.length === 0) this.result = cluster_encode(this.bwCanvas.getImageData(), this.numImages);
+    } else {
+      if (this.imgDatas.length === 0) this.result = xor_encode(this.bwCanvas.getImageData(), this.numImages);
+      else if (this.imgDatas.length === 1)
+        this.result = [xor_encodeWithMask(this.bwCanvas.getImageData(), scaleImageData(this.imgDatas[0], this.size))];
+    }
   }
 
   private decode() {
-    if (this.imgDatas.length > 1) this.result = [decode(this.imgDatas.map(img => scaleImageData(img, this.size)))];
+    if (this.imgDatas.length > 1)
+      if (this.algoCluster) this.result = [cluster_decode(this.imgDatas.map(img => scaleImageData(img, this.size)))];
+      else this.result = [xor_decode(this.imgDatas.map(img => scaleImageData(img, this.size)))];
   }
 
   protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
@@ -49,7 +58,11 @@ export class Root extends LitElement {
 
   render() {
     return html`
-      <bo-shell @info=${() => this.whatIsThis.scrollIntoView({ behavior: 'smooth' })}>
+      <bo-shell
+        header=${this.algoCluster ? 'Bin Ocular 2' : 'Bin Ocular'}
+        @info-click=${() => this.whatIsThis.scrollIntoView({ behavior: 'smooth' })}
+        @title-click=${() => (this.algoCluster = !this.algoCluster)}
+      >
         <div id="upload-row">
           <div>
             <h4>Drawing</h4>
@@ -120,27 +133,53 @@ export class Root extends LitElement {
             <span>${this.numImages}</span>
           </label>
           <div>
-            <button @click=${this.encode} ?disabled=${this.imgDatas.length > 1}>Encode</button>
+            <button
+              @click=${this.encode}
+              ?disabled=${
+                this.imgDatas.length > (this.algoCluster ? 0 : 1) // Cluster algorithm doesn't support encoding with custom image
+              }
+            >
+              Encode
+            </button>
             <button @click=${this.decode} ?disabled=${this.imgDatas.length <= 1}>Decode</button>
           </div>
         </div>
         <div id="hint">
           This will
           ${this.imgDatas.length === 0
-            ? `encode the drawing into ${this.numImages} images.`
+            ? `encode the drawing into ${this.numImages} images`
             : this.imgDatas.length === 1
-              ? 'encode the drawing using the image.'
-              : `decode the ${this.imgDatas.length} images.`}
+              ? this.algoCluster
+                ? "not work. This algorithm doesn't support encoding with custom image"
+                : 'encode the drawing using the image'
+              : `decode the ${this.imgDatas.length} images`}.
         </div>
 
         ${this.result.length
           ? html`<div id="result">
-              <h4>Result</h4>
+              <h4>
+                Result
+                <button title="Put the 'Result' in 'Images'" @click=${() => (this.imgDatas = this.result)}>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="m14.1213 15.6213 0-4.2426m0 0-4.2426 0m4.2426 0-4.2426 4.2426m3.1813-9.3113-2.12-2.12a1.5 1.5 0 00-1.061-.44h-5.379a2.25 2.25 0 00-2.25 2.25v12a2.25 2.25 0 002.25 2.25h15a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"
+                    />
+                  </svg>
+                </button>
+              </h4>
               <img-result .imgDatas=${this.result}></img-result>
             </div>`
           : null}
 
-        <what-is-this></what-is-this>
+        <what-is-this ?alternatecontent=${this.algoCluster}></what-is-this>
       </bo-shell>
     `;
   }
@@ -211,7 +250,7 @@ export class Root extends LitElement {
       flex: 1;
       cursor: pointer;
     }
-    button {
+    #action-row button {
       cursor: pointer;
       border: 1px solid currentColor;
       border-radius: 0.5rem;
@@ -224,14 +263,14 @@ export class Root extends LitElement {
       line-height: 1rem;
       text-align: center;
     }
-    button:hover {
+    #action-row button:hover {
       background-color: #646ee4;
       color: black;
     }
-    button:active {
+    #action-row button:active {
       transform: scale(0.97);
     }
-    button[disabled] {
+    #action-row button[disabled] {
       opacity: 0.5;
       pointer-events: none;
     }
@@ -246,6 +285,19 @@ export class Root extends LitElement {
       margin-top: 1rem;
       width: 100%;
       max-width: 1600px;
+    }
+    #result button {
+      vertical-align: -40%;
+      cursor: pointer;
+      border: none;
+      background-color: transparent;
+      padding: 0;
+      aspect-ratio: 1 / 1;
+      color: white;
+    }
+    svg {
+      width: 1.5rem;
+      height: 1.5rem;
     }
     img-result {
       margin-top: 0.5rem;

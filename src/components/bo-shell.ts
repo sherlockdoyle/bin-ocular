@@ -1,10 +1,16 @@
 import { LitElement, css, html } from 'lit';
-import { customElement } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 
 @customElement('bo-shell')
 export class Shell extends LitElement {
+  @property({ type: String })
+  header = '';
+
   private onInfoClick() {
-    this.dispatchEvent(new CustomEvent('info'));
+    this.dispatchEvent(new CustomEvent('info-click'));
+  }
+  private onTitleClick() {
+    this.dispatchEvent(new CustomEvent('title-click'));
   }
 
   render() {
@@ -25,7 +31,7 @@ export class Shell extends LitElement {
             />
           </svg>
         </button>
-        <span id="title">Bin Ocular</span>
+        <span id="title" @click=${this.onTitleClick}>${this.header}</span>
         <a href="https://github.com/sherlockdoyle/bin-ocular" target="_blank" title="See on GitHub">
           <svg viewBox="0 0 24 24" fill="currentColor">
             <path
