@@ -423,8 +423,9 @@
         <li>
           <strong>Artistry Mode:</strong> Get creative in the <em>Drawing</em> area. Adjust the <em>Line Width</em>, or
           hit <em>Clear</em> to start fresh. You can change the resolution and decide how many noise images to make.
-          More images mean less noise in each image. You can also drag and drop an image to convert it into binary. Hit
-          <em>Encode</em>, and you've got your noise images to save and share.
+          More images mean ${this.alternateContent?"higher density on overlap":"less noise in each image"}. You can
+          also drag and drop an image to convert it into binary. Hit <em>Encode</em>, and you've got your noise images
+          to save and share.
         </li>
         ${this.alternateContent?null:p`
               <li>
