@@ -2,7 +2,7 @@
 
 function getRandomAngles(anglesPerRow: number): number[] {
   const angles = new Array<number>();
-  for (let i = 0; i < anglesPerRow * anglesPerRow; ++i) angles[i] = Math.random() * Math.PI * 2;
+  for (let i = 0; i < anglesPerRow * anglesPerRow; ++i) angles.push(Math.random() * Math.PI * 2);
   return angles;
 }
 
